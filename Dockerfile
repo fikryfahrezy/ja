@@ -10,9 +10,9 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm build
 
-FROM nginx:stable-alpine AS runtime
+FROM nginx:1.31.8-trixie AS runtime
 
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist/client /usr/share/nginx/html
 
 EXPOSE 80
