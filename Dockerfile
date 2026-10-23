@@ -1,15 +1,14 @@
-FROM node:24.22.1-bookworm-slim@sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205 AS build
+FROM oven/bun:1.4.3-debian@sha256:923bedb355f7746666659f71e724998159a5c8c54bd1cb1030e1975a0698415b AS build
 
 WORKDIR /app
 
-COPY --from=ghcr.io/pnpm/pnpm:12-alpine /opt/pnpm /opt/pnpm
-RUN ln -s /opt/pnpm/pnpm /usr/local/bin/pnpm
-
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+ENV CI=true
+COPY package.json bun.lock bunfig.toml ./
+# Nuxt preparation needs the application source, which is copied below.
+RUN bun install --frozen-lockfile --ignore-scripts
 
 COPY . .
-RUN pnpm build
+RUN bun run build
 
 FROM nginx:1.31.8-trixie AS runtime
 
