@@ -155,7 +155,9 @@ mat2 rotate(float a) {
 }
 
 void main() {
-	float scatter = smoothstep(0.0, 1.0, clamp((uScroll - aRand.w * 0.35) / 0.65, 0.0, 1.0));
+	// Letters start scattered above the page and settle onto it as you scroll.
+	float apart = 1.0 - uScroll;
+	float scatter = smoothstep(0.0, 1.0, clamp((apart - aRand.w * 0.35) / 0.65, 0.0, 1.0));
 	float lift = pointerLift(aCell);
 
 	vec3 quad = position * (1.0 + lift * 0.18 + scatter * 0.6);
@@ -172,7 +174,7 @@ void main() {
 	vec2 origin = vec2(mod(aGlyph, uAtlasCols), floor(aGlyph / uAtlasCols)) * tile;
 	vUv = origin + vec2(uv.x, 1.0 - uv.y) * tile;
 	vLift = max(lift, scatter * 0.8);
-	vAlpha = smoothstep(aOrder, aOrder + 1.5, uReveal) * (1.0 - smoothstep(0.75, 1.0, uScroll) * 0.6);
+	vAlpha = smoothstep(aOrder, aOrder + 1.5, uReveal) * (1.0 - smoothstep(0.75, 1.0, apart) * 0.6);
 	vTitle = aTitle;
 }
 `;
