@@ -143,7 +143,7 @@ attribute float aOrder;
 attribute vec4 aRand;
 attribute float aTitle;
 uniform float uAtlasCols;
-uniform float uReveal;
+uniform float uIntro;
 varying vec2 vUv;
 varying float vLift;
 varying float vAlpha;
@@ -155,9 +155,10 @@ mat2 rotate(float a) {
 }
 
 void main() {
-	// Letters start scattered above the page and settle onto it as you scroll.
+	// Letters start scattered above the page and settle onto it as you scroll,
+	// in reading order, so the page is written as you go.
 	float apart = 1.0 - uScroll;
-	float scatter = smoothstep(0.0, 1.0, clamp((apart - aRand.w * 0.35) / 0.65, 0.0, 1.0));
+	float scatter = smoothstep(0.0, 1.0, clamp((apart - (1.0 - aOrder) * 0.35) / 0.65, 0.0, 1.0));
 	float lift = pointerLift(aCell);
 
 	vec3 quad = position * (1.0 + lift * 0.18 + scatter * 0.6);
@@ -174,7 +175,8 @@ void main() {
 	vec2 origin = vec2(mod(aGlyph, uAtlasCols), floor(aGlyph / uAtlasCols)) * tile;
 	vUv = origin + vec2(uv.x, 1.0 - uv.y) * tile;
 	vLift = max(lift, scatter * 0.8);
-	vAlpha = smoothstep(aOrder, aOrder + 1.5, uReveal) * (1.0 - smoothstep(0.75, 1.0, apart) * 0.6);
+	// Faint while in the air, solid once on the page.
+	vAlpha = (1.0 - scatter * 0.6) * uIntro;
 	vTitle = aTitle;
 }
 `;
@@ -248,7 +250,6 @@ export class ManuscriptScene {
 	private running = false;
 	private frame = 0;
 	private disposables: { dispose(): void }[] = [];
-	readonly glyphCount: number;
 
 	constructor(
 		private canvas: HTMLCanvasElement,
@@ -268,13 +269,11 @@ export class ManuscriptScene {
 		const placements = layoutManuscript();
 		const unique = [...new Set(placements.map((p) => p.char))];
 		const atlas = buildAtlas(unique, font);
-		this.glyphCount = placements.length;
 
 		this.uniforms = {
 			uTime: { value: 0 },
 			uScroll: { value: 0 },
 			uIntro: { value: 0 },
-			uReveal: { value: 0 },
 			uMouse: { value: new THREE.Vector2(99, 99) },
 			uMouseStrength: { value: 0 },
 			uPaper: { value: new THREE.Color(colors.paper) },
@@ -317,7 +316,7 @@ export class ManuscriptScene {
 			cells[i * 2] = SHEET_W / 2 - (p.col + 0.5) * PITCH;
 			cells[i * 2 + 1] = SHEET_H / 2 - (p.row + 0.5);
 			glyphs[i] = unique.indexOf(p.char);
-			order[i] = i;
+			order[i] = i / Math.max(placements.length - 1, 1);
 			for (let k = 0; k < 4; k++) rand[i * 4 + k] = Math.random();
 			title[i] = p.title ? 1 : 0;
 		});
@@ -369,10 +368,6 @@ export class ManuscriptScene {
 
 	get intro() {
 		return this.uniforms.uIntro;
-	}
-
-	get reveal() {
-		return this.uniforms.uReveal;
 	}
 
 	setScroll(progress: number) {

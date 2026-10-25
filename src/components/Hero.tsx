@@ -109,7 +109,6 @@ export function Hero() {
 
 			if (reduced) {
 				current.intro.value = 1;
-				current.reveal.value = current.glyphCount + 2;
 				current.render();
 			}
 		};
@@ -138,12 +137,6 @@ export function Hero() {
 						value: 1,
 						duration: 2.4,
 						ease: "power2.inOut",
-					});
-					gsap.to(scene.reveal, {
-						value: scene.glyphCount + 2,
-						duration: 3.2,
-						delay: 0.9,
-						ease: "power1.inOut",
 					});
 				});
 			}),
