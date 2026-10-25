@@ -500,6 +500,12 @@ em {
 	.nav-menu {
 		display: block;
 	}
+	/* Blurring the hero canvas, which redraws every frame, costs phones a
+	   steady chunk of each frame; a nearly solid bar reads the same. */
+	.nav.is-scrolled {
+		background: rgb(233 227 211 / 0.94);
+		backdrop-filter: none;
+	}
 }
 
 /* ---------- Hero ---------- */

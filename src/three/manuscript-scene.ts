@@ -255,7 +255,9 @@ export class ManuscriptScene {
 	) {
 		this.renderer = new THREE.WebGLRenderer({
 			canvas,
-			antialias: true,
+			// The rules anti-alias themselves in the shader; on dense screens MSAA
+			// adds little beyond a big fill-rate cost that phones feel.
+			antialias: window.devicePixelRatio < 2,
 			alpha: true,
 			powerPreference: "high-performance",
 		});
